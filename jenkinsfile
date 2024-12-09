@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "web-app"
+        CONTAINER_PORT = "80"
+        HOST_PORT = "8081" // Use a different host port to avoid conflict with Jenkins
+    }
+    stages {
+        stage('Clone') {
+            steps {
+                echo "Cloning the code from GitHub repository"
+                git url: "https://github.com/Saksham2716/monitoring-cicd.git", branch: "main"
+            }
+        }
+        stage('Cleanup') {
+            steps {
+                echo "Cleaning up old Docker containers and images"
+                sh "docker rm -f \$(docker ps -aq --filter ancestor=${IMAGE_NAME}) || true"
+                sh "docker rmi -f ${IMAGE_NAME} || true"
+            }
+        }
+        stage('Build') {
+            steps {
+                echo "Building Docker Image"
+                sh "docker build -t ${IMAGE_NAME} ."
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo "Deploying Docker Container"
+                sh "docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} ${IMAGE_NAME}"
+            }
+        }
+    }
+}
