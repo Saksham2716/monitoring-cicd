@@ -2,7 +2,7 @@ const express = require("express");
 const promClient = require("prom-client");
 
 const app = express();
-const port = 8081;
+const port = 8082;
 
 // Create a default registry for Prometheus metrics
 const register = promClient.register;
