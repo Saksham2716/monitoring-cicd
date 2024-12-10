@@ -1,37 +1,34 @@
-const express = require('express');
-const promClient = require('prom-client');
-const path = require('path');
+const express = require("express");
+const promClient = require("prom-client");
 
 const app = express();
 const port = 8081;
 
-// Serve static files (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
+// Create a default registry for Prometheus metrics
+const register = promClient.register;
 
-// Create a registry to collect metrics
-const register = new promClient.Registry();
-promClient.collectDefaultMetrics({ register }); // Collect default Node.js metrics
-
-// Example of a custom metric
-const clickCounter = new promClient.Counter({
-  name: 'button_clicks_total',
-  help: 'Total number of button clicks',
-});
-register.registerMetric(clickCounter);
-
-// Route for metrics
-app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', register.contentType);
-  res.send(await register.metrics());
+// Example metric: Counter to track button clicks
+const buttonClickCounter = new promClient.Counter({
+  name: "button_clicks_total",
+  help: "Total number of button clicks",
 });
 
-// Simulate tracking button clicks
-app.post('/button-click', (req, res) => {
-  clickCounter.inc(); // Increment counter
-  res.send({ status: 'OK' });
+// Simulate incrementing the counter (you can trigger this via an API or event)
+setInterval(() => {
+  buttonClickCounter.inc();
+}, 5000);
+
+// Expose /metrics endpoint
+app.get("/metrics", async (req, res) => {
+  try {
+    res.set("Content-Type", register.contentType);
+    res.end(await register.metrics());
+  } catch (err) {
+    res.status(500).end(err);
+  }
 });
 
-// Start the server
+// Start server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
