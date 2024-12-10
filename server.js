@@ -29,6 +29,7 @@ app.get("/metrics", async (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
+app.listen('0.0.0.0', port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
